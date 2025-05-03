@@ -13,10 +13,11 @@
 El protocolo HTTP es aquel que define un conjunto de métodos de petición que indican la acción que se desea realizar para un recurso determinado del servidor.
 
 Los principales métodos soportados por HTTP y por ello usados por una API REST son:
-#### `POST`: crear un recurso nuevo.
-#### `PUT`: modificar un recurso existente.
-#### `GET`: consultar información de un recurso.
-#### `DELETE`: eliminar un recurso.
+
+#### `POST`: crear un recurso nuevo
+#### `PUT`: modificar un recurso existente
+#### `GET`: consultar información de un recurso
+#### `DELETE`: eliminar un recurso
 
 Como te diste cuenta con estos métodos podemos empezar a crear un CRUD en nuestra aplicación.
 
