@@ -25,24 +25,31 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Construcción de la URL de PostgreSQL
-DB_USER = os.getenv("PGUSER", "postgres")
-DB_PASSWORD = os.getenv("PGPASSWORD", "")
-DB_HOST = os.getenv("PGHOST", "localhost")
+# Obtener variables de entorno
+DB_USER = os.getenv("PGUSER")
+DB_PASSWORD = os.getenv("PGPASSWORD")
+DB_HOST = os.getenv("PGHOST")
 DB_PORT = os.getenv("PGPORT", "5432")
-DB_NAME = os.getenv("PGDATABASE", "movies_db")
+DB_NAME = os.getenv("PGDATABASE")
 
-# URL de conexión PostgreSQL
-database_url = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+# Verificar si están configuradas las variables de PostgreSQL
+if all([DB_USER, DB_PASSWORD, DB_HOST, DB_NAME]):
+    # Usar PostgreSQL
+    database_url = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    print(f"🐘 Conectando a PostgreSQL en {DB_HOST}")
+else:
+    # Fallback a SQLite solo para desarrollo local
+    print("⚠️ Variables de PostgreSQL no encontradas, usando SQLite")
+    database_url = "sqlite:///./database.sqlite"
 
-# Para desarrollo local con SQLite (opcional)
-# database_url = "sqlite:///./database.sqlite"
+print(f"📊 Database URL: {database_url.split('@')[0]}@****")  # Log sin mostrar contraseña
 
 engine = create_engine(
     database_url,
-    echo=True,
+    echo=False,  # Cambiar a False en producción para menos logs
     pool_pre_ping=True,  # Verifica conexiones antes de usarlas
     pool_recycle=3600,   # Recicla conexiones cada hora
+    connect_args={"sslmode": "require"} if "postgresql" in database_url else {}
 )
 
 Session = sessionmaker(bind=engine)

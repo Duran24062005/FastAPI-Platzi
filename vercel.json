@@ -13,10 +13,6 @@
     }
   ],
   "env": {
-    "PGHOST": "@pghost",
-    "PGPORT": "@pgport",
-    "PGUSER": "@pguser",
-    "PGPASSWORD": "@pgpassword",
-    "PGDATABASE": "@pgdatabase"
+    "PYTHON_VERSION": "3.12"
   }
 }
