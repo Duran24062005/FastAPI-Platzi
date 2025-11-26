@@ -49,7 +49,9 @@ engine = create_engine(
     echo=False,  # Cambiar a False en producción para menos logs
     pool_pre_ping=True,  # Verifica conexiones antes de usarlas
     pool_recycle=3600,   # Recicla conexiones cada hora
-    connect_args={"sslmode": "require"} if "postgresql" in database_url else {}
+    connect_args={"sslmode": "require"} if "postgresql" in database_url else {},
+    pool_size=5,  # Número de conexiones en el pool
+    max_overflow=10  # Conexiones adicionales permitidas
 )
 
 Session = sessionmaker(bind=engine)
