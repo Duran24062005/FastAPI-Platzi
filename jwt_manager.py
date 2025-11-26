@@ -1,25 +1,22 @@
+import os
 from jwt import encode, decode, ExpiredSignatureError, InvalidTokenError
 from fastapi import HTTPException
- 
-my_key = 'mi_llave_secreta'
+from dotenv import load_dotenv
 
-# def create_token(data: dict) -> str:
-#     token: str = encode(payload=data, key=my_key, algorithm="HS256")
-#     return token
+load_dotenv()
 
-# def decode_token(token: str) -> dict:
-#     data: dict = decode(token, my_key, algorithms=['HS256'])
-#     return data
+# Usar variable de entorno para la clave secreta
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "mi_llave_secreta_super_segura_cambiar_en_produccion")
 
-# Función para crear el token
 def create_token(data: dict) -> str:
-    token: str = encode(payload=data, key=my_key, algorithm="HS256")
+    """Crea un token JWT con los datos proporcionados"""
+    token: str = encode(payload=data, key=SECRET_KEY, algorithm="HS256")
     return token
 
-# Función para decodificar el token
 def decode_token(token: str) -> dict:
+    """Decodifica y valida un token JWT"""
     try:
-        data: dict = decode(token, my_key, algorithms=['HS256'])
+        data: dict = decode(token, SECRET_KEY, algorithms=['HS256'])
         return data
     except ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")

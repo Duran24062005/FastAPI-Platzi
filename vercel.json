@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "main.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "main.py"
+    }
+  ],
+  "env": {
+    "PGHOST": "@pghost",
+    "PGPORT": "@pgport",
+    "PGUSER": "@pguser",
+    "PGPASSWORD": "@pgpassword",
+    "PGDATABASE": "@pgdatabase"
+  }
+}
