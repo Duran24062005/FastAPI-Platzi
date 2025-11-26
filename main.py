@@ -5,11 +5,6 @@ from middlewares.error import ErrorHandler
 from router.user import UserModel
 from router.user import user_router
 from router.movie import movie_router
-import logging
-
-# Configurar logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 app = FastAPI()
 app.title = '⚙️Mi app con FastAPI🔧'
@@ -21,14 +16,23 @@ app.add_middleware(ErrorHandler)
 app.include_router(user_router)
 app.include_router(movie_router)
 
-# Inicializar la base de datos al inicio
-try:
-    from config.database import engine, Base
-    logger.info("🔧 Creando tablas en la base de datos...")
-    Base.metadata.create_all(bind=engine)
-    logger.info("✅ Tablas creadas exitosamente")
-except Exception as e:
-    logger.error(f"❌ Error al crear tablas: {e}")
+# Variable para trackear si las tablas ya se crearon
+_db_initialized = False
+
+@app.on_event("startup")
+async def startup_event():
+    """Inicializar base de datos en el primer request"""
+    global _db_initialized
+    if not _db_initialized:
+        try:
+            from config.database import engine, Base
+            print("🔧 Creando tablas en la base de datos...")
+            Base.metadata.create_all(bind=engine)
+            print("✅ Tablas creadas exitosamente")
+            _db_initialized = True
+        except Exception as e:
+            print(f"❌ Error al crear tablas: {e}")
+            # No lanzar excepción para permitir que la app siga
 
 @app.get("/", tags=['Home'])
 async def message():
@@ -41,16 +45,14 @@ async def health_check():
     return JSONResponse(content={
         "status": "ok",
         "version": app.version,
-        "database": "PostgreSQL" if os.getenv("PGHOST") else "SQLite"
+        "database": "PostgreSQL" if os.getenv("PGHOST") else "SQLite",
+        "db_initialized": _db_initialized
     }, status_code=200)
 
 @app.post("/Login", tags=['auth'])
 async def login(user: UserModel):
     token: str = create_token(user.model_dump())
     return JSONResponse(content={"token": token}, status_code=200)
-
-# Vercel buscará automáticamente 'app' o 'application'
-# No es necesario crear un handler explícito
 
 
 @app.get("/debug/env", tags=['Debug'])
