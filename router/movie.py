@@ -73,6 +73,33 @@ async def create_movie(movie: Movie) -> dict:
     return JSONResponse(status_code=201,content={'message': 'The movie has been created successfully'})
 
 
+@movie_router.post('/movies/all', tags=['movies'], response_model=dict, status_code=201)
+async def create_movies(movies: List[Movie]) -> dict:
+    db = Session()
+
+    try:
+        for movie in movies:
+            new_movie = MoviEntity(**movie.model_dump())
+            db.add(new_movie)
+
+        db.commit()
+
+        return JSONResponse(
+            status_code=201,
+            content={"message": "All movies have been created successfully"}
+        )
+
+    except Exception as e:
+        db.rollback()
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"An error occurred: {str(e)}"}
+        )
+
+    finally:
+        db.close()
+
+
 
 
 @movie_router.put('/movies/{id}', tags=['movies'], response_model=dict, status_code=200)

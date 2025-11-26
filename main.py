@@ -6,7 +6,9 @@ from router.user import UserModel
 from router.user import user_router
 from router.movie import movie_router
 
-app = FastAPI()
+app = FastAPI(
+    docs_url = "/"
+)
 app.title = '⚙️Mi app con FastAPI🔧'
 app.description = "🛠️My firstApp in FastAPI with Platzi🛠️"
 app.version = '0.1.0'
