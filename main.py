@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, JSONResponse
 from jwt_manager import create_token
 from middlewares.error import ErrorHandler
+from middlewares.cors import app_cors
 from router.user import UserModel
 from router.user import user_router
 from router.movie import movie_router
@@ -12,6 +13,10 @@ app = FastAPI(
 app.title = '⚙️Mi app con FastAPI🔧'
 app.description = "🛠️My firstApp in FastAPI with Platzi🛠️"
 app.version = '0.1.0'
+
+
+# Cors Middleware
+app_cors(app)
 
 app.add_middleware(ErrorHandler)
 
