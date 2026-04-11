@@ -1,27 +1,22 @@
+from sqlalchemy import Column, Float, Integer, String
+
 from app.config.database import Base
-from sqlalchemy import Column, Integer, String, Float
+
 
 class Movie(Base):
-    __tablename__ = 'movies'
+    __tablename__ = "movies"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    title = Column(String)
-    overview = Column(String)
-    year = Column(Integer)
-    rating = Column(Float)
-    category = Column(String)
+    title = Column(String(50), nullable=False)
+    overview = Column(String(1500), nullable=False)
+    year = Column(Integer, nullable=False)
+    rating = Column(Float, nullable=False)
+    category = Column(String(15), nullable=False)
 
 
 class User(Base):
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    email = Column(String)
-    password = Column(String)
-
-class User2(Base):
-    __tablename__ = 'users2'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    email = Column(String)
-    password = Column(String)
+    email = Column(String(50), nullable=False, unique=True, index=True)
+    password = Column(String(255), nullable=False)

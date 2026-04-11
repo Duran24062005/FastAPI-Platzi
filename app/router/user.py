@@ -1,55 +1,48 @@
-from fastapi import APIRouter, Depends
-from fastapi.responses import JSONResponse
-from app.config.database import Session
-from app.model.movie_model import User2 as UserEntity
-from pydantic import BaseModel, Field
-from typing import List
-from app.middlewares.jwt_bearer import JWTBearer
-from fastapi.encoders import jsonable_encoder
+from typing import Annotated
 
-user_router = APIRouter()
+from fastapi import APIRouter, Depends, status
 
-class UserModel(BaseModel):
-    email: str = Field(min_length=5, max_length=50)
-    password: str = Field(min_length=5, max_length=50)
-    
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "email": "alexi@gmail.com",
-                "password": "hxk65d"
-            }
-        }
+from app.controller.user import UserController
+from app.dependencies.providers import get_current_user_email, get_user_controller
+from app.schemas.common import MessageResponse
+from app.schemas.user import UserCreate, UserFilterQuery, UserResponse
+
+user_router = APIRouter(tags=["user"])
 
 
-@user_router.post('/create_user/', tags=['user'], status_code=201, response_model = dict, dependencies=[Depends(JWTBearer())])
-async def create_user(user:UserModel) -> dict:
-    db = Session()
-    new_user = UserEntity(**user.dict())
-    db.add(new_user)
-    db.commit()
-    db.close()
-    return JSONResponse(status_code=201,content={'message': 'The User has been created successfully'})
+@user_router.post(
+    "/create_user/",
+    response_model=MessageResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(get_current_user_email)],
+)
+async def create_user(
+    user: UserCreate,
+    controller: UserController = Depends(get_user_controller),
+) -> MessageResponse:
+    return controller.create_user(user)
 
 
-@user_router.get('/get_user', tags=['user'], response_model=List[UserModel], status_code=200, dependencies=[Depends(JWTBearer())])
-async def get_users() -> List[UserModel]:
-    db = Session()
-    resp = db.query(UserEntity).all()
-    db.close()
-    if resp:
-        return JSONResponse(status_code=200, content=jsonable_encoder(resp))
-    else:
-        return JSONResponse(status_code=400, content={'message': 'detail not found'})
-    
+@user_router.get(
+    "/get_user",
+    response_model=list[UserResponse],
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_current_user_email)],
+)
+async def get_users(
+    controller: UserController = Depends(get_user_controller),
+) -> list[UserResponse]:
+    return controller.get_users()
 
-@user_router.get('/get_user/', tags=['user'], response_model = List[UserModel], dependencies=[Depends(JWTBearer())])
-async def get_user_by_email(email: str) -> List[UserModel]:
-    db = Session()
-    resp = db.query(UserEntity).filter(UserEntity.email == email).first()
-    db.close()
-    if resp:
-        return JSONResponse(status_code=200, content=jsonable_encoder(resp))
-    else:
-        return JSONResponse(status_code=400, content={'message': 'detail not found'})
-    
+
+@user_router.get(
+    "/get_user/",
+    response_model=UserResponse,
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_current_user_email)],
+)
+async def get_user_by_email(
+    filters: Annotated[UserFilterQuery, Depends()],
+    controller: UserController = Depends(get_user_controller),
+) -> UserResponse:
+    return controller.get_user_by_email(filters.email)

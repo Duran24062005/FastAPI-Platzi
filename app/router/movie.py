@@ -1,133 +1,86 @@
-from fastapi import APIRouter, Path, Depends
-from fastapi.responses import JSONResponse
-from app.config.database import Session
-from app.model.movie_model import Movie as MoviEntity
-from pydantic import BaseModel, Field
-from typing import List
-from app.middlewares.jwt_bearer import JWTBearer
-from fastapi.encoders import jsonable_encoder
-from app.service.movie import MovieService
+from typing import Annotated
 
-movie_router = APIRouter()
+from fastapi import APIRouter, Depends, Path, status
 
+from app.controller.movie import MovieController
+from app.dependencies.providers import get_movie_controller
+from app.schemas.common import MessageResponse
+from app.schemas.movie import MovieCreate, MovieFilterQuery, MovieResponse, MovieUpdate
 
-class Movie(BaseModel):
-    title: str = Field(min_length=5, max_length=50)
-    overview: str = Field(default='Descripción de la pelicula', min_length=15, max_length=1500)
-    year: int = Field(le=2024)
-    rating: float = Field(ge=1, le=10)
-    category: str = Field(min_length=5, max_length=15)
-
-    class Config:
-        json_schema_extra = {
-            "example":{
-                'title': 'The Matrix',
-                'overview': 'Description of the movie',
-                'year': 2024,
-                'rating': 8.4,
-                'category': 'Acción'
-            }
-        }
+movie_router = APIRouter(prefix="/movies", tags=["movies"])
 
 
-
-@movie_router.get('/movies', tags=['movies'], response_model=List[Movie], status_code=200)
-async def get_movies() -> List[Movie]:
-    db = Session()
-    resp = MovieService(db).get_movies()
-    db.close()
-    return JSONResponse(status_code=200, content=jsonable_encoder(resp))
+@movie_router.get("", response_model=list[MovieResponse], status_code=status.HTTP_200_OK)
+async def get_movies(
+    controller: MovieController = Depends(get_movie_controller),
+) -> list[MovieResponse]:
+    return controller.get_movies()
 
 
-
-@movie_router.get('/movies/{id}', tags=['movies'], response_model = Movie, status_code=200)
-async def get_movie(id: int = Path(ge=1, le=2000)) -> Movie:
-    db = Session()
-    resp = db.query(MoviEntity).filter(MoviEntity.id == id).first()
-    db.close()
-    if resp:
-        return JSONResponse(status_code=200, content=jsonable_encoder(resp))
-    else:
-        return JSONResponse(status_code=404,content={'message': 'Movie not found'})
-
-
-
-@movie_router.get('/movies/', tags=['movies'], response_model = List[Movie])
-async def get_movies_by_category(category: str) -> List[Movie]:
-    db = Session()
-    resp = db.query(MoviEntity).filter(MoviEntity.category == category).all()
-    db.close()
-    if resp:
-        return JSONResponse(status_code=200, content=jsonable_encoder(resp))
-    else:
-        return JSONResponse(status_code=400, content={'message': 'detail not found'})
-    
+@movie_router.get(
+    "/search",
+    response_model=list[MovieResponse],
+    status_code=status.HTTP_200_OK,
+)
+async def get_movies_by_category(
+    filters: Annotated[MovieFilterQuery, Depends()],
+    controller: MovieController = Depends(get_movie_controller),
+) -> list[MovieResponse]:
+    return controller.get_movies_by_category(filters.category)
 
 
-@movie_router.post('/movies/', tags=['movies'], response_model = dict, status_code=201)
-async def create_movie(movie: Movie) -> dict:
-    db = Session()
-    new_movie = MoviEntity(**movie.model_dump())
-    db.add(new_movie)
-    db.commit()
-    return JSONResponse(status_code=201,content={'message': 'The movie has been created successfully'})
+@movie_router.get(
+    "/{id}",
+    response_model=MovieResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def get_movie(
+    id: Annotated[int, Path(ge=1, le=2000)],
+    controller: MovieController = Depends(get_movie_controller),
+) -> MovieResponse:
+    return controller.get_movie_by_id(id)
 
 
-@movie_router.post('/movies/all', tags=['movies'], response_model=dict, status_code=201)
-async def create_movies(movies: List[Movie]) -> dict:
-    db = Session()
-
-    try:
-        for movie in movies:
-            new_movie = MoviEntity(**movie.model_dump())
-            db.add(new_movie)
-
-        db.commit()
-
-        return JSONResponse(
-            status_code=201,
-            content={"message": "All movies have been created successfully"}
-        )
-
-    except Exception as e:
-        db.rollback()
-        return JSONResponse(
-            status_code=500,
-            content={"error": f"An error occurred: {str(e)}"}
-        )
-
-    finally:
-        db.close()
+@movie_router.post("", response_model=MovieResponse, status_code=status.HTTP_201_CREATED)
+async def create_movie(
+    movie: MovieCreate,
+    controller: MovieController = Depends(get_movie_controller),
+) -> MovieResponse:
+    return controller.create_movie(movie)
 
 
+@movie_router.post(
+    "/all",
+    response_model=MessageResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_movies(
+    movies: list[MovieCreate],
+    controller: MovieController = Depends(get_movie_controller),
+) -> MessageResponse:
+    return controller.create_movies(movies)
 
 
-@movie_router.put('/movies/{id}', tags=['movies'], response_model=dict, status_code=200)
-async def update_movie(id: int, movie: Movie) -> dict:
-    db = Session()
-    resp = db.query(MoviEntity).filter(MoviEntity.id == id).first()
-    if resp:
-        resp.title = movie.title
-        resp.overview = movie.overview
-        resp.year = movie.year
-        resp.rating = movie.rating
-        resp.category = movie.category
-        db.commit()
-        db.close()
-        return JSONResponse(status_code=200, content={'message': 'The movie has been updated successfully'})
-    else:
-        return JSONResponse(content={'message': 'Fail, this movie does not exist'})
+@movie_router.put(
+    "/{id}",
+    response_model=MovieResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def update_movie(
+    id: Annotated[int, Path(ge=1, le=2000)],
+    movie: MovieUpdate,
+    controller: MovieController = Depends(get_movie_controller),
+) -> MovieResponse:
+    return controller.update_movie(id, movie)
 
 
-
-@movie_router.delete('/movies/{id}', tags=['movies'], status_code=200)
-async def delete_movie(id: int):
-    db = Session()
-    resp = db.query(MoviEntity).filter(MoviEntity.id == id).first()
-    if resp:
-        db.delete(resp)
-        db.commit()
-        db.close()
-        return JSONResponse(status_code=200, content={'message': 'Deleted movie successfully'})
-    else:
-        return JSONResponse(content={'message': 'Fail, this movie does not exist'})
+@movie_router.delete(
+    "/{id}",
+    response_model=MessageResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def delete_movie(
+    id: Annotated[int, Path(ge=1, le=2000)],
+    controller: MovieController = Depends(get_movie_controller),
+) -> MessageResponse:
+    return controller.delete_movie(id)
