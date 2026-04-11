@@ -1,4 +1,4 @@
-from collections.abc import Generator
+from collections.abc import AsyncGenerator
 
 from fastapi import Depends
 from sqlalchemy.orm import Session
@@ -15,7 +15,7 @@ from app.service.movie import MovieService
 from app.service.user import UserService
 
 
-def get_db() -> Generator[Session, None, None]:
+async def get_db() -> AsyncGenerator[Session, None]:
     db = SessionLocal()
     try:
         yield db
@@ -23,25 +23,25 @@ def get_db() -> Generator[Session, None, None]:
         db.close()
 
 
-def get_movie_controller(db: Session = Depends(get_db)) -> MovieController:
+async def get_movie_controller(db: Session = Depends(get_db)) -> MovieController:
     repository = MovieRepository(db)
     service = MovieService(repository)
     return MovieController(service)
 
 
-def get_user_controller(db: Session = Depends(get_db)) -> UserController:
+async def get_user_controller(db: Session = Depends(get_db)) -> UserController:
     repository = UserRepository(db)
     service = UserService(repository)
     return UserController(service)
 
 
-def get_auth_controller(db: Session = Depends(get_db)) -> AuthController:
+async def get_auth_controller(db: Session = Depends(get_db)) -> AuthController:
     repository = UserRepository(db)
     service = AuthService(repository)
     return AuthController(service)
 
 
-def get_current_user_email(
+async def get_current_user_email(
     token_payload: dict = Depends(JWTBearer()),
 ) -> str:
     return token_payload["email"]

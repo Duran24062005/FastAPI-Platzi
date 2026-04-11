@@ -1,11 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path, status
+from fastapi import APIRouter, Depends, Path, Query, status
 
 from app.controller.movie import MovieController
 from app.dependencies.providers import get_movie_controller
 from app.schemas.common import MessageResponse
-from app.schemas.movie import MovieCreate, MovieFilterQuery, MovieResponse, MovieUpdate
+from app.schemas.movie import MovieCreate, MovieResponse, MovieUpdate
 
 movie_router = APIRouter(prefix="/movies", tags=["movies"])
 
@@ -23,10 +23,10 @@ async def get_movies(
     status_code=status.HTTP_200_OK,
 )
 async def get_movies_by_category(
-    filters: Annotated[MovieFilterQuery, Depends()],
+    category: Annotated[str, Query(min_length=3, max_length=15)],
     controller: MovieController = Depends(get_movie_controller),
 ) -> list[MovieResponse]:
-    return controller.get_movies_by_category(filters.category)
+    return controller.get_movies_by_category(category)
 
 
 @movie_router.get(

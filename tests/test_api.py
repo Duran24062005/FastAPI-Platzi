@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 
 from app.config.database import Base, SessionLocal, engine
 from app.main import app
-from app.model.movie_model import User
+from app.model.user_model import User
 
 
 class APITestCase(unittest.TestCase):

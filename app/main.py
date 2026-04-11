@@ -6,7 +6,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from app.config.config import app_config
 from app.config.database import Base, engine
 from app.middlewares.cors import app_cors
-from app.middlewares.error import ErrorHandler
+from app.middlewares.error import register_exception_handlers
 from app.router.auth import auth_router
 from app.router.movie import movie_router
 from app.router.user import user_router
@@ -19,7 +19,7 @@ app = FastAPI(
 )
 
 app_cors(app)
-app.add_middleware(ErrorHandler)
+register_exception_handlers(app)
 
 app.include_router(auth_router)
 app.include_router(user_router)

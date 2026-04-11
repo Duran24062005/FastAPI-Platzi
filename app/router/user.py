@@ -1,11 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 
 from app.controller.user import UserController
 from app.dependencies.providers import get_current_user_email, get_user_controller
 from app.schemas.common import MessageResponse
-from app.schemas.user import UserCreate, UserFilterQuery, UserResponse
+from app.schemas.user import UserCreate, UserResponse
 
 user_router = APIRouter(tags=["user"])
 
@@ -42,7 +42,7 @@ async def get_users(
     dependencies=[Depends(get_current_user_email)],
 )
 async def get_user_by_email(
-    filters: Annotated[UserFilterQuery, Depends()],
+    email: Annotated[str, Query(min_length=5, max_length=50)],
     controller: UserController = Depends(get_user_controller),
 ) -> UserResponse:
-    return controller.get_user_by_email(filters.email)
+    return controller.get_user_by_email(email)
