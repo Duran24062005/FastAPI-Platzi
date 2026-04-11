@@ -1,43 +1,84 @@
-# Repository Reorganization PRD
+# PRD: Refactorización a Arquitectura por Capas con Repository y Core
 
-## Problema y objetivo
+## Problema actual
 
-El repositorio mezclaba runtime activo, ejemplos del curso, seeds, documentación y archivos de infraestructura en la raíz. Eso hacía menos clara la frontera entre lo que ejecuta la aplicación y lo que solo sirve como referencia o soporte.
+La aplicación tenía lógica HTTP, validación, acceso a base de datos y reglas de negocio mezcladas dentro de los routers. Eso generaba acoplamiento fuerte entre FastAPI, SQLAlchemy y la lógica funcional, dificultando mantenimiento, testing y extensión del proyecto.
 
-El objetivo es reorganizar la estructura para que el runtime principal quede agrupado en un solo paquete, y el resto del material quede separado por responsabilidad.
+También existían inconsistencias relevantes:
 
-## Scope
+- los schemas Pydantic vivían dentro de los routers
+- el login generaba JWT sin autenticar contra base de datos
+- el guard `JWTBearer` estaba implementado con firma de middleware, no de dependency
+- coexistían dos modelos de usuario (`User` y `User2`) sin una responsabilidad clara
 
-- crear `app/` para el runtime principal
-- crear `docs/` para documentación técnica
-- crear `prds/` para decisiones y planeación
-- mantener `example/` separado del runtime
-- actualizar imports y entrypoints para reflejar la nueva estructura
+## Objetivo
 
-## Implementación
+Reorganizar el runtime para dejar una arquitectura limpia y trazable basada en capas:
 
-- mover el código operativo a `app/`
-- convertir imports del runtime a rutas absolutas bajo `app`
-- actualizar el entrypoint de Vercel y la referencia del contenedor
-- documentar el criterio de organización
+- `router`: solo definición de rutas y dependencias FastAPI
+- `controller`: traducción entre capa HTTP y capa de aplicación
+- `service`: lógica de negocio
+- `repository`: acceso a persistencia
+- `schemas`: contratos de entrada y salida
+- `core`: piezas transversales, especialmente excepciones de aplicación
 
-## Actores afectados
+## Alcance
 
-- desarrolladores que mantienen la API
-- cualquier despliegue local, Docker o Vercel
+Incluido en esta refactorización:
 
-## Impacto en contratos e integraciones
+- dominio `movies`
+- dominio `users`
+- flujo `auth` para login y validación JWT
+- dependencia compartida de base de datos
+- documentación de arquitectura y convenciones
+- pruebas base con `TestClient`
 
-- cambia la ruta del entrypoint Python para Vercel
-- cambia la referencia del módulo ASGI para ejecución con Uvicorn
-- no cambian las rutas HTTP ni el contrato de la API
+No incluido:
 
-## Riesgos y validaciones
+- hashing de contraseñas
+- migraciones formales de base de datos
+- separación por bounded contexts o módulos independientes
 
-- riesgo de imports rotos después del movimiento
-- riesgo de desalineación con configuración de despliegue
+## Decisiones de diseño
 
-Validaciones aplicadas:
+### Core
 
-- recompilación de módulos Python
-- revisión de referencias a rutas e imports clave
+Se crea `app/core` como capa transversal del runtime. Su responsabilidad actual es centralizar excepciones de aplicación y constantes compartidas. No contiene lógica específica de dominio.
+
+### Repository
+
+Cada dominio usa un repository dedicado que encapsula acceso a SQLAlchemy y sesión inyectada. Los repositories no conocen FastAPI ni retornan respuestas HTTP.
+
+### Controller
+
+Los controllers reciben datos ya validados y traducen excepciones de aplicación a `HTTPException`. De esta forma, el mapeo HTTP queda fuera de service y de router.
+
+### Usuario persistente
+
+Se elimina la duplicidad conceptual entre `User` y `User2` y se deja un único modelo persistente `User` sobre la tabla `users`.
+
+### Auth
+
+El login ahora valida credenciales contra base de datos antes de emitir el token. `JWTBearer` se reescribe como dependencia válida de FastAPI y verifica que el usuario del token exista.
+
+## Impacto técnico
+
+- cambia la estructura interna del runtime en `app/`
+- cambian imports y dependencias entre capas
+- el endpoint de login mantiene su ruta `/Login`, pero ahora autentica realmente
+- se introduce el endpoint `GET /movies/search` para filtrar por categoría sin volver a mezclar lógica en un router duplicado
+
+## Riesgos y edge cases
+
+- la tabla antigua `users2` puede seguir existiendo en bases previas, pero deja de ser usada por el runtime
+- las contraseñas siguen en texto plano porque este cambio se enfocó en arquitectura, no en seguridad avanzada
+- si existen consumidores que dependían del comportamiento incorrecto del login anterior, ahora recibirán errores de autenticación válidos
+
+## Validaciones requeridas
+
+- arranque correcto de la app
+- importación correcta del runtime
+- CRUD de películas funcionando por capas
+- endpoints de usuarios protegidos por JWT
+- login autenticando contra base de datos
+- traducción consistente de errores funcionales a respuestas HTTP

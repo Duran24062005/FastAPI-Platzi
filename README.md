@@ -13,9 +13,29 @@
 
 - `app/`: aplicación FastAPI activa y su código fuente.
 - `app/api/index.py`: entrypoint usado para despliegue.
+- `app/core/`: excepciones y piezas transversales del runtime.
+- `app/controller/`: traducción entre HTTP y capa de aplicación.
+- `app/service/`: lógica de negocio.
+- `app/repository/`: acceso a datos.
+- `app/schemas/`: contratos Pydantic por dominio.
+- `app/dependencies/`: wiring de sesión DB, controllers y auth.
 - `example/`: material de ejemplo, variantes didácticas y scripts de seed que no hacen parte del runtime principal.
 - `docs/`: documentación técnica del repositorio.
 - `prds/`: documentos de planeación y decisiones relevantes.
+
+## Arquitectura actual
+
+La API sigue un flujo por capas:
+
+`request -> router -> controller -> service -> repository -> db`
+
+Esto permite mantener las rutas limpias, llevar el mapeo HTTP a controllers, concentrar la lógica en services y encapsular la persistencia en repositories.
+
+## Despliegue en Vercel
+
+- `vercel.json` enruta todas las requests hacia `app/api/index.py`.
+- `app/api/index.py` expone la aplicación ASGI sin lógica adicional de runtime.
+- `app/main.py` sigue siendo el bootstrap único de la API.
 
 # Métodos HTTP
 El protocolo HTTP es aquel que define un conjunto de métodos de petición que indican la acción que se desea realizar para un recurso determinado del servidor.

@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Separar claramente el runtime principal de la aplicación de los materiales de ejemplo, la documentación y los archivos de infraestructura.
+Separar claramente el runtime principal de la aplicación de los materiales de ejemplo, la documentación y los archivos de infraestructura, y mantener dentro del runtime una arquitectura por capas fácil de extender.
 
 ## Estructura
 
@@ -14,14 +14,18 @@ Separar claramente el runtime principal de la aplicación de los materiales de e
 
 ## Criterio para `app/`
 
-En `app/` vive únicamente el código necesario para:
+En `app/` vive únicamente el código necesario para ejecutar la API y debe organizarse por responsabilidades:
 
-- inicializar la API
-- exponer endpoints
-- aplicar middlewares
-- definir modelos y acceso a datos
-- resolver autenticación y lógica de servicio
-- proveer entrypoints de ejecución o despliegue
+- `router/`: definición de endpoints
+- `controller/`: mapeo HTTP
+- `service/`: lógica de negocio
+- `repository/`: persistencia
+- `schemas/`: validación y contratos
+- `core/`: piezas transversales del runtime
+- `dependencies/`: composición de dependencias
+- `model/`: entidades ORM
+- `config/`: configuración e infraestructura
+- `middlewares/`: middlewares y guardas
 
 ## Fuera de `app/`
 
