@@ -1,8 +1,8 @@
 from fastapi import Request, HTTPException
-from jwt_manager import decode_token
+from app.jwt_manager import decode_token
 from fastapi.security import HTTPBearer
-from config.database import Session
-from model.movie_model import User2 
+from app.config.database import Session
+from app.model.movie_model import User2 
 
 # class JWTBearer(HTTPBearer):
 #     db = Session()

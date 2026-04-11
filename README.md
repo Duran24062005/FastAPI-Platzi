@@ -9,6 +9,14 @@
 
 <br/>
 
+## Estructura del proyecto
+
+- `app/`: aplicación FastAPI activa y su código fuente.
+- `app/api/index.py`: entrypoint usado para despliegue.
+- `example/`: material de ejemplo, variantes didácticas y scripts de seed que no hacen parte del runtime principal.
+- `docs/`: documentación técnica del repositorio.
+- `prds/`: documentos de planeación y decisiones relevantes.
+
 # Métodos HTTP
 El protocolo HTTP es aquel que define un conjunto de métodos de petición que indican la acción que se desea realizar para un recurso determinado del servidor.
 

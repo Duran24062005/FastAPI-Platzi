@@ -1,15 +1,15 @@
 from fastapi import FastAPI, HTTPException, Path, Query, Request, Depends
 from  fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.security.http import HTTPAuthorizationCredentials
-from db import db_movie, db_user
-from service import get_movie_by_id, get_movie_by_category, check_if_movie_exist, verify_credentials
+from example.db import db_movie, db_user
+from example.services import get_movie_by_id, get_movie_by_category, check_if_movie_exist, verify_credentials
 from pydantic import BaseModel, Field
 from typing import Optional, List
-from jwt_manager import create_token, verify_token
+from app.jwt_manager import create_token, verify_token
 from fastapi.security import HTTPBearer
-from config.database import Session, engine, Base
-from model.movie_model import Movie as MoviEntity
-from model.movie_model import User2 as UserEntity
+from app.config.database import Session, engine, Base
+from app.model.movie_model import Movie as MoviEntity
+from app.model.movie_model import User2 as UserEntity
 from fastapi.encoders import jsonable_encoder
 
 

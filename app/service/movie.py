@@ -1,4 +1,4 @@
-from model.movie_model import Movie as MoviEntity
+from app.model.movie_model import Movie as MoviEntity
 
 class MovieService():
 

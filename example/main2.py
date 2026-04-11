@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Body
 from  fastapi.responses import HTMLResponse
-from db import db_movie
-from service import get_movie_by_id, get_movie_by_category, check_if_movie_exist
+from example.db import db_movie
+from example.services import get_movie_by_id, get_movie_by_category, check_if_movie_exist
 
 
 app = FastAPI()

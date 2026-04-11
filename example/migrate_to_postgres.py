@@ -2,9 +2,9 @@
 Script para migrar datos iniciales a PostgreSQL
 Ejecuta este script localmente antes de desplegar
 """
-from config.database import Session, Base, engine
-from model.movie_model import Movie, User2
-from db import db_movie
+from app.config.database import Session, Base, engine
+from app.model.movie_model import Movie, User2
+from example.db import db_movie
 
 # Crear todas las tablas
 Base.metadata.create_all(bind=engine)

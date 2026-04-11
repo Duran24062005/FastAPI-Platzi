@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Path, Depends
 from fastapi.responses import JSONResponse
-from config.database import Session
-from model.movie_model import Movie as MoviEntity
+from app.config.database import Session
+from app.model.movie_model import Movie as MoviEntity
 from pydantic import BaseModel, Field
 from typing import List
-from middlewares.jwt_bearer import JWTBearer
+from app.middlewares.jwt_bearer import JWTBearer
 from fastapi.encoders import jsonable_encoder
-from service.movie import MovieService
+from app.service.movie import MovieService
 
 movie_router = APIRouter()
 

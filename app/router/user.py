@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
-from config.database import Session
-from model.movie_model import User2 as UserEntity
+from app.config.database import Session
+from app.model.movie_model import User2 as UserEntity
 from pydantic import BaseModel, Field
 from typing import List
-from middlewares.jwt_bearer import JWTBearer
+from app.middlewares.jwt_bearer import JWTBearer
 from fastapi.encoders import jsonable_encoder
 
 user_router = APIRouter()

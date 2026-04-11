@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, JSONResponse
-from jwt_manager import create_token
-from middlewares.error import ErrorHandler
-from middlewares.cors import app_cors
-from router.user import UserModel
-from router.user import user_router
-from router.movie import movie_router
+from app.jwt_manager import create_token
+from app.middlewares.error import ErrorHandler
+from app.middlewares.cors import app_cors
+from app.router.user import UserModel
+from app.router.user import user_router
+from app.router.movie import movie_router
 
 app = FastAPI(
     docs_url = "/"
@@ -32,7 +32,7 @@ async def startup_event():
     global _db_initialized
     if not _db_initialized:
         try:
-            from config.database import engine, Base
+            from app.config.database import engine, Base
             print("🔧 Creando tablas en la base de datos...")
             Base.metadata.create_all(bind=engine)
             print("✅ Tablas creadas exitosamente")
