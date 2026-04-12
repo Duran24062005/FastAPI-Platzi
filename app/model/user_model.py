@@ -9,3 +9,4 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String(50), nullable=False, unique=True, index=True)
     password = Column(String(255), nullable=False)
+    role = Column(String(20), nullable=False, default="user", server_default="user")

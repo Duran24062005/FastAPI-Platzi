@@ -6,14 +6,18 @@ from app.schemas.movie import (
     MovieUpdate,
 )
 from app.schemas.user import (
+    AdminUserUpdate,
     LoginRequest,
     TokenResponse,
     UserCreate,
     UserFilterQuery,
+    UserRegisterRequest,
     UserResponse,
+    UserRole,
 )
 
 __all__ = [
+    "AdminUserUpdate",
     "LoginRequest",
     "MessageResponse",
     "MovieCreate",
@@ -23,5 +27,7 @@ __all__ = [
     "TokenResponse",
     "UserCreate",
     "UserFilterQuery",
+    "UserRegisterRequest",
     "UserResponse",
+    "UserRole",
 ]

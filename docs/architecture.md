@@ -43,7 +43,11 @@ Cuando se agregue un nuevo dominio:
 
 ## Auth y usuarios
 
-- el login se resuelve desde `auth` usando un controller y un service dedicados
+- el registro publico y el login se resuelven desde `auth` usando un controller y un service dedicados
 - el manejo JWT vive en `app/core/security/jwt.py`
 - el bearer guard vive en `app/core/security/bearer.py`
 - la existencia del usuario autenticado se verifica antes de permitir el acceso a rutas protegidas
+- la autorizacion admin se resuelve desde `app/dependencies/` consultando el usuario actual en DB
+- la gestion administrativa de usuarios vive bajo rutas `/api/v1/admin/users`
+- la entidad `User` persiste un campo `role` y el runtime soporta `user` y `admin`
+- `Base.metadata.create_all()` no migra la tabla `users`; si la base ya existe hay que agregar `role` manualmente o recrear la tabla

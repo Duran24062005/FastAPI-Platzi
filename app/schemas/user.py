@@ -1,4 +1,11 @@
+from enum import Enum
+
 from pydantic import BaseModel, Field
+
+
+class UserRole(str, Enum):
+    USER = "user"
+    ADMIN = "admin"
 
 
 class UserBase(BaseModel):
@@ -28,10 +35,41 @@ class UserCreate(UserBase):
     }
 
 
+class UserRegisterRequest(UserCreate):
+    pass
+
+
+class AdminUserUpdate(UserBase):
+    password: str = Field(
+        min_length=5,
+        max_length=50,
+        description="Contrasena del usuario.",
+        examples=["new-secret123"],
+    )
+    role: UserRole = Field(
+        description="Rol asignado al usuario.",
+        examples=["admin"],
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "email": "admin@example.com",
+                "password": "new-secret123",
+                "role": "admin",
+            }
+        }
+    }
+
+
 class UserResponse(UserBase):
     id: int = Field(
         description="Identificador unico del usuario.",
         examples=[1],
+    )
+    role: UserRole = Field(
+        description="Rol actual del usuario.",
+        examples=["user"],
     )
 
     model_config = {
@@ -40,6 +78,7 @@ class UserResponse(UserBase):
             "example": {
                 "id": 1,
                 "email": "alexi@gmail.com",
+                "role": "user",
             }
         },
     }

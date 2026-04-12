@@ -7,9 +7,9 @@ from app.config.config import app_config
 from app.config.database import Base, engine
 from app.middlewares.cors import app_cors
 from app.middlewares.error import register_exception_handlers
+from app.router.admin_user import admin_user_router
 from app.router.auth import auth_router
 from app.router.movie import movie_router
-from app.router.user import user_router
 
 app = FastAPI(
     title=app_config["APP_NAME"],
@@ -22,8 +22,8 @@ app = FastAPI(
             "description": "Endpoints de autenticacion y obtencion de token JWT.",
         },
         {
-            "name": "Users",
-            "description": "Administracion y consulta de usuarios protegida por autenticacion.",
+            "name": "Admin Users",
+            "description": "Gestion administrativa de usuarios protegida por rol admin.",
         },
         {
             "name": "Movies",
@@ -44,7 +44,7 @@ app_cors(app)
 register_exception_handlers(app)
 
 app.include_router(auth_router, prefix="/api/v1/auth")
-app.include_router(user_router, prefix="/api/v1/user")
+app.include_router(admin_user_router, prefix="/api/v1/admin")
 app.include_router(movie_router, prefix="/api/v1/movie")
 
 _db_initialized = False

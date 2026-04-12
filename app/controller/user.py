@@ -2,7 +2,7 @@ from fastapi import HTTPException, status
 
 from app.core.exceptions import AppException
 from app.schemas.common import MessageResponse
-from app.schemas.user import UserCreate, UserResponse
+from app.schemas.user import AdminUserUpdate, UserResponse
 from app.service.user import UserService
 
 
@@ -10,15 +10,18 @@ class UserController:
     def __init__(self, service: UserService) -> None:
         self.service = service
 
-    def create_user(self, user_data: UserCreate) -> MessageResponse:
-        self._execute(lambda: self.service.create_user(user_data))
-        return MessageResponse(message="The user has been created successfully")
-
     def get_users(self) -> list[UserResponse]:
         return self._execute(self.service.get_users)
 
-    def get_user_by_email(self, email: str) -> UserResponse:
-        return self._execute(lambda: self.service.get_user_by_email(email))
+    def get_user_by_id(self, user_id: int) -> UserResponse:
+        return self._execute(lambda: self.service.get_user_by_id(user_id))
+
+    def update_user(self, user_id: int, user_data: AdminUserUpdate) -> UserResponse:
+        return self._execute(lambda: self.service.update_user(user_id, user_data))
+
+    def delete_user(self, user_id: int) -> MessageResponse:
+        self._execute(lambda: self.service.delete_user(user_id))
+        return MessageResponse(message="Deleted user successfully")
 
     def _execute(self, action):
         try:
